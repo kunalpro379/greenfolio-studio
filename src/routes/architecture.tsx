@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
-import { PenTool, Workflow, GitBranch, Box, LayoutTemplate, Maximize2, Save, Share2 } from "lucide-react";
+import { PenTool, Workflow, GitBranch, Box, LayoutTemplate, Database, StickyNote, Sparkles, Maximize2, Save, Share2 } from "lucide-react";
 import { ClientOnly, CanvasLoading } from "@/components/ClientOnly";
 
 const ExcalidrawCanvas = lazy(() => import("@/components/ExcalidrawCanvas"));
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/architecture")({
   head: () => ({
     meta: [
       { title: "Architecture Studio — Verdant" },
-      { name: "description", content: "Draw system design diagrams with Excalidraw, draw.io, BPMN, Isoflow and DrawCMS." },
+      { name: "description", content: "Draw system design diagrams with Excalidraw, draw.io, BPMN, drawDB, Miro, diagrams.so, Isoflow and DrawCMS." },
       { property: "og:title", content: "Architecture Studio — Verdant" },
       { property: "og:description", content: "Every diagram tool for system design in one place." },
       { property: "og:type", content: "website" },
@@ -26,12 +26,33 @@ const tools = [
   { id: "drawio", name: "draw.io", icon: Workflow, desc: "Map a cloud network" },
   { id: "bpmn", name: "BPMN", icon: GitBranch, desc: "Model a process" },
   { id: "isoflow", name: "Isoflow", icon: Box, desc: "Build an isometric map" },
+  { id: "drawdb", name: "drawDB", icon: Database, desc: "Design a database schema" },
+  { id: "miro", name: "Miro", icon: StickyNote, desc: "Embed a Miro board" },
+  { id: "diagramsso", name: "diagrams.so", icon: Sparkles, desc: "Generate a diagram with AI" },
   { id: "drawcms", name: "DrawCMS", icon: LayoutTemplate, desc: "Publish diagrams as content" },
 ] as const;
 type ToolId = (typeof tools)[number]["id"];
 
 function Frame({ src, title }: { src: string; title: string }) {
   return <iframe src={src} title={title} className="h-full w-full border-0 bg-paper" allow="clipboard-read; clipboard-write" />;
+}
+
+function MiroEmbed() {
+  const [url, setUrl] = useState("");
+  const [id, setId] = useState<string | null>(null);
+  const go = () => { const m = url.match(/board\/([^/?#]+)/) ?? url.match(/live-embed\/([^/?#]+)/); setId(m ? m[1]! : url.trim() || null); };
+  if (id) return <Frame title="Miro board" src={`https://miro.com/app/live-embed/${id}/?autoplay=true&embedMode=view_only_without_ui`} />;
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 bg-polygons p-8 text-center">
+      <StickyNote className="h-10 w-10 text-leaf-600" />
+      <p className="max-w-md font-serif text-2xl text-ink">Paste a Miro board link to embed it live.</p>
+      <div className="flex w-full max-w-lg gap-2">
+        <input value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="https://miro.com/app/board/uXjV…=/" className="h-11 flex-1 rounded-full border border-border bg-paper px-4 text-sm outline-none focus:border-leaf-500" />
+        <button onClick={go} className="rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-leaf-800">Embed</button>
+      </div>
+      <p className="text-xs text-muted-foreground">The board must be shared as "Anyone with the link can view".</p>
+    </div>
+  );
 }
 
 function Architecture() {
@@ -42,6 +63,16 @@ function Architecture() {
     drawio: <Frame title="draw.io" src="https://embed.diagrams.net/?ui=min&spin=1&libraries=1&noExitBtn=1&saveAndExit=0" />,
     bpmn: <BpmnCanvas />,
     isoflow: <IsoflowCanvas />,
+    drawdb: <Frame title="drawDB" src="https://www.drawdb.app/editor" />,
+    miro: <MiroEmbed />,
+    diagramsso: (
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-polygons p-8 text-center">
+        <Sparkles className="h-10 w-10 text-leaf-600" />
+        <p className="max-w-md font-serif text-2xl text-ink">diagrams.so turns a sentence into an architecture diagram.</p>
+        <p className="max-w-md text-sm text-muted-foreground">Their site can't be shown inside ours. Generating diagrams right here needs a diagrams.so API key.</p>
+        <a href="https://diagrams.so" target="_blank" rel="noreferrer" className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-leaf-800">Open diagrams.so ↗</a>
+      </div>
+    ),
     drawcms: (
       <div className="flex h-full flex-col items-center justify-center gap-4 bg-polygons p-8 text-center">
         <LayoutTemplate className="h-10 w-10 text-leaf-600" />
