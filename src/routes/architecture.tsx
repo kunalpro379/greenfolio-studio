@@ -5,6 +5,7 @@ import { ClientOnly, CanvasLoading } from "@/components/ClientOnly";
 
 const ExcalidrawCanvas = lazy(() => import("@/components/ExcalidrawCanvas"));
 const BpmnCanvas = lazy(() => import("@/components/BpmnCanvas"));
+const IsoflowCanvas = lazy(() => import("@/components/IsoflowCanvas"));
 
 export const Route = createFileRoute("/architecture")({
   head: () => ({
@@ -21,11 +22,11 @@ export const Route = createFileRoute("/architecture")({
 });
 
 const tools = [
-  { id: "excalidraw", name: "Excalidraw", icon: PenTool, desc: "Hand-drawn whiteboard sketches" },
-  { id: "drawio", name: "draw.io", icon: Workflow, desc: "Precise cloud & network diagrams" },
-  { id: "bpmn", name: "BPMN", icon: GitBranch, desc: "Business process modeling" },
-  { id: "isoflow", name: "Isoflow", icon: Box, desc: "Isometric infrastructure maps" },
-  { id: "drawcms", name: "DrawCMS", icon: LayoutTemplate, desc: "Diagrams as content" },
+  { id: "excalidraw", name: "Excalidraw", icon: PenTool, desc: "Sketch an idea" },
+  { id: "drawio", name: "draw.io", icon: Workflow, desc: "Map a cloud network" },
+  { id: "bpmn", name: "BPMN", icon: GitBranch, desc: "Model a process" },
+  { id: "isoflow", name: "Isoflow", icon: Box, desc: "Build an isometric map" },
+  { id: "drawcms", name: "DrawCMS", icon: LayoutTemplate, desc: "Publish diagrams as content" },
 ] as const;
 type ToolId = (typeof tools)[number]["id"];
 
@@ -40,8 +41,15 @@ function Architecture() {
     excalidraw: <ExcalidrawCanvas />,
     drawio: <Frame title="draw.io" src="https://embed.diagrams.net/?ui=min&spin=1&libraries=1&noExitBtn=1&saveAndExit=0" />,
     bpmn: <BpmnCanvas />,
-    isoflow: <Frame title="Isoflow" src="https://isoflow.io/app" />,
-    drawcms: <Frame title="DrawCMS" src="https://drawcms.com" />,
+    isoflow: <IsoflowCanvas />,
+    drawcms: (
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-polygons p-8 text-center">
+        <LayoutTemplate className="h-10 w-10 text-leaf-600" />
+        <p className="max-w-md font-serif text-2xl text-ink">DrawCMS doesn't allow being opened inside other sites.</p>
+        <p className="max-w-md text-sm text-muted-foreground">Open it in a new tab, build your diagram, then export and drop it into Files.</p>
+        <a href="https://drawcms.com" target="_blank" rel="noreferrer" className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-leaf-800">Open DrawCMS ↗</a>
+      </div>
+    ),
   }[tool];
 
   return (
