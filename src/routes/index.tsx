@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Shuffle, Boxes, FolderOpen, BookOpen, PenLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, Shuffle, GripVertical, Trash2, Pencil, Check, Plus, Boxes, FolderOpen, BookOpen, PenLine } from "lucide-react";
 import { posts, type Post } from "@/lib/data";
 import { CoverArt } from "@/components/CoverArt";
 
@@ -132,18 +132,31 @@ function Magazine({ items: posts }: { items: Post[] }) {
 }
 
 function Bento({ items: posts }: { items: Post[] }) {
-  const spans = ["md:col-span-2 md:row-span-2", "", "", "md:col-span-2", "", "md:row-span-2", "", "md:col-span-2", ""];
+  const spans = ["md:col-span-2 md:row-span-2", "", "", "md:col-span-2", "md:col-span-2", "md:col-span-2"];
   return (
-    <div className="grid auto-rows-[220px] gap-4 md:grid-cols-4">
-      {posts.map((p, i) => (
-        <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className={`group relative overflow-hidden rounded-2xl border border-border bg-paper shadow-soft animate-rise ${spans[i]}`} style={{ animationDelay: `${i * 50}ms` }}>
-          <CoverArt seed={p.seed} className="absolute inset-0 h-full w-full opacity-90 transition duration-700 group-hover:scale-105" />
-          <div className="absolute inset-x-3 bottom-3 rounded-xl bg-paper/90 p-4 backdrop-blur">
-            <p className="eyebrow !text-[0.65rem]">{p.tag} · {p.date}</p>
-            <h3 className={`mt-1 font-bold leading-snug text-ink ${i === 0 ? "text-2xl" : "text-[15px]"}`}>{p.title}</h3>
-          </div>
-        </Link>
-      ))}
+    <div className="grid grid-flow-dense auto-rows-[240px] gap-4 md:grid-cols-4">
+      {posts.map((p, i) => {
+        const below = (p.seed + i) % 2 === 0 && i !== 0;
+        return (
+          <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className={`group flex flex-col animate-rise ${spans[i] ?? ""}`} style={{ animationDelay: `${i * 50}ms` }}>
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl shadow-soft">
+              <CoverArt seed={p.seed} className="absolute inset-0 h-full w-full transition duration-700 group-hover:scale-105" />
+              {!below && (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent p-5 pt-16">
+                  <p className="font-mono text-[0.65rem] uppercase tracking-widest text-leaf-200">{p.tag} · {p.date}</p>
+                  <h3 className={`mt-1 font-bold leading-snug text-primary-foreground ${i === 0 ? "text-3xl" : "text-base"}`}>{p.title}</h3>
+                </div>
+              )}
+            </div>
+            {below && (
+              <div className="pt-3">
+                <p className="eyebrow !text-[0.65rem]">{p.tag} · {p.date}</p>
+                <h3 className="mt-1 line-clamp-2 text-[15px] font-bold leading-snug text-ink group-hover:text-leaf-700">{p.title}</h3>
+              </div>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -171,6 +184,14 @@ function makeStream(): Sec[] {
 function Index() {
   const [stream, setStream] = useState<Sec[]>(() => layouts.map((layout, id) => ({ id, layout, items: posts.slice(0, counts[layout]) })));
   useEffect(() => setStream(makeStream()), []);
+  const [edit, setEdit] = useState(false);
+  const [drag, setDrag] = useState<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
+  const drop = (to: number) => {
+    if (drag === null || drag === to) return;
+    const r = [...stream]; const [m] = r.splice(drag, 1); r.splice(to, 0, m!); setStream(r);
+  };
+  const setLayout = (i: number, layout: Layout) => setStream(stream.map((s, j) => (j === i ? { ...s, layout, items: shuffle(posts).slice(0, counts[layout]) } : s)));
   const render = (s: Sec) => ({ gallery: <Gallery items={s.items} />, dashed: <Dashed items={s.items} />, magazine: <Magazine items={s.items} />, bento: <Bento items={s.items} /> })[s.layout];
 
   return (
@@ -185,20 +206,38 @@ function Index() {
           </Link>
         ))}
       </section>
-      <div className="mx-auto mt-24 flex max-w-[1400px] justify-end px-6">
+      <div className="mx-auto mt-24 flex max-w-[1400px] justify-end gap-2 px-6">
+        <button className={`pill ${edit ? "!bg-ink !text-primary-foreground" : ""}`} onClick={() => setEdit(!edit)}>{edit ? <><Check className="h-3.5 w-3.5" /> Done editing</> : <><Pencil className="h-3.5 w-3.5" /> Edit layout</>}</button>
         <button className="pill" onClick={() => setStream(makeStream())}><Shuffle className="h-3.5 w-3.5" /> Shuffle layouts</button>
       </div>
       {stream.map((s, i) => (
-        <section key={`${s.id}-${s.layout}-${s.items[0]?.slug}`} className="mx-auto mt-14 max-w-[1400px] px-6">
+        <section key={`${s.id}-${s.layout}-${s.items[0]?.slug}`} draggable={edit}
+          onDragStart={() => setDrag(i)} onDragEnd={() => { setDrag(null); setOver(null); }}
+          onDragOver={(e) => { if (edit) { e.preventDefault(); setOver(i); } }} onDrop={() => { drop(i); setOver(null); }}
+          className={`mx-auto mt-14 max-w-[1400px] px-6 transition ${edit ? "cursor-grab rounded-3xl border-2 border-dashed py-6 " + (over === i && drag !== i ? "border-leaf-500 bg-accent/40" : "border-border") : ""} ${drag === i ? "opacity-40" : ""}`}>
           <div className="mb-10 flex items-end justify-between gap-4 border-b border-border pb-4">
-            <div>
+            <div className="flex items-end gap-3">
+              {edit && <GripVertical className="mb-2 h-6 w-6 text-leaf-600" />}
+              <div>
               <p className="eyebrow">{String(i + 1).padStart(2, "0")} · {s.layout}</p>
               <h2 className="mt-2 font-serif text-4xl text-ink">{titles[s.layout]}</h2>
+              </div>
             </div>
+            {edit && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {layouts.map((l) => <button key={l} onClick={() => setLayout(i, l)} className={`pill !py-1 text-xs capitalize ${s.layout === l ? "!bg-ink !text-primary-foreground" : ""}`}>{l}</button>)}
+                <button aria-label="Remove section" onClick={() => setStream(stream.filter((_, j) => j !== i))} className="pill !p-1.5"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            )}
           </div>
           {render(s)}
         </section>
       ))}
+      {edit && (
+        <div className="mx-auto mt-10 max-w-[1400px] px-6">
+          <button onClick={() => { const l = layouts[Math.floor(Math.random() * 4)]!; setStream([...stream, { id: Date.now(), layout: l, items: shuffle(posts).slice(0, counts[l]) }]); }} className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-border py-8 text-muted-foreground hover:border-leaf-500 hover:text-ink"><Plus className="h-4 w-4" /> Add section</button>
+        </div>
+      )}
     </main>
   );
 }
