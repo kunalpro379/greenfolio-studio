@@ -48,7 +48,7 @@ function Meta({ p }: { p: Post }) {
 
 function Hero() {
   const [i, setI] = useState(0);
-  const p = posts[i];
+  const p = posts[i]!;
   return (
     <section className="mx-auto max-w-[1400px] px-6 pt-16">
       <h1 className="max-w-[1300px] text-[clamp(2.2rem,4.6vw,4.4rem)] leading-[1.08] tracking-[-0.03em] text-ink">
@@ -106,7 +106,8 @@ function Dashed() {
 }
 
 function Magazine() {
-  const [lead, ...rest] = posts;
+  const lead = posts[0]!;
+  const rest = posts.slice(1);
   return (
     <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
       <Link to="/blog/$slug" params={{ slug: lead.slug }} className="group animate-rise">
@@ -156,7 +157,7 @@ const features = [
 
 function Index() {
   const [layout, setLayout] = useState<Layout>("gallery");
-  useEffect(() => setLayout(layouts[Math.floor(Math.random() * layouts.length)]), []);
+  useEffect(() => setLayout(layouts[Math.floor(Math.random() * layouts.length)]!), []);
   const view = { gallery: <Gallery />, dashed: <Dashed />, magazine: <Magazine />, bento: <Bento /> }[layout];
 
   return (
@@ -181,7 +182,7 @@ function Index() {
             {layouts.map((l) => (
               <button key={l} onClick={() => setLayout(l)} className={`pill capitalize ${layout === l ? "!bg-ink !text-primary-foreground" : ""}`}>{l}</button>
             ))}
-            <button className="pill" onClick={() => setLayout(layouts[(layouts.indexOf(layout) + 1 + Math.floor(Math.random() * 3)) % 4])}><Shuffle className="h-3.5 w-3.5" /> Shuffle</button>
+            <button className="pill" onClick={() => setLayout(layouts[(layouts.indexOf(layout) + 1 + Math.floor(Math.random() * 3)) % 4]!)}><Shuffle className="h-3.5 w-3.5" /> Shuffle</button>
           </div>
         </div>
         <div key={layout}>{view}</div>

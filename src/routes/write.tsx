@@ -143,7 +143,7 @@ function Write() {
               {tags.map((t) => (
                 <span key={t} className="pill !py-1 text-xs">{t}<button onClick={() => setTags(tags.filter((x) => x !== t))}><X className="h-3 w-3" /></button></span>
               ))}
-              <button onClick={() => setTags([...tags, ["Edge", "Databases", "Security", "Design"][tags.length % 4]])} className="pill !py-1 text-xs text-muted-foreground"><Plus className="h-3 w-3" /> Tag</button>
+              <button onClick={() => setTags([...tags, ["Edge", "Databases", "Security", "Design"][tags.length % 4]!])} className="pill !py-1 text-xs text-muted-foreground"><Plus className="h-3 w-3" /> Tag</button>
             </div>
             <textarea ref={ta} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Tell your story…" className="mt-8 min-h-[60vh] w-full resize-none bg-transparent font-mono text-[15px] leading-7 text-ink outline-none" />
           </div>
