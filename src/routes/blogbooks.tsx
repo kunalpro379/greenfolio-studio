@@ -19,7 +19,7 @@ export const Route = createFileRoute("/blogbooks")({
 });
 
 function Blogbooks() {
-  const [picked, setPicked] = useState<string[]>([posts[0].slug, posts[4].slug]);
+  const [picked, setPicked] = useState<string[]>([posts[0]!.slug, posts[4]!.slug]);
   const [title, setTitle] = useState("My System Design Guide");
   const toggle = (s: string) => setPicked(picked.includes(s) ? picked.filter((x) => x !== s) : [...picked, s]);
 

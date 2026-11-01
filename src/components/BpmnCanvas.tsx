@@ -27,8 +27,9 @@ export default function BpmnCanvas() {
   useEffect(() => {
     if (!ref.current) return;
     const modeler = new BpmnModeler({ container: ref.current });
-    modeler.importXML(starter).catch(console.error);
-    return () => modeler.destroy();
+    let alive = true;
+    modeler.importXML(starter).then(() => alive && (modeler.get("canvas") as { zoom: (v: string) => void }).zoom("fit-viewport")).catch((e) => alive && console.error(e));
+    return () => { alive = false; modeler.destroy(); };
   }, []);
   return <div ref={ref} className="h-full w-full bg-paper" />;
 }
