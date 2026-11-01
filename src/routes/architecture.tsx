@@ -51,15 +51,21 @@ function Architecture() {
         <span className="font-bold">Draw the system.</span> <span className="font-serif">Pick the right tool for every diagram — sketches, clouds, processes and isometric maps.</span>
       </h1>
 
-      <div className="mt-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {tools.map((t) => (
-          <button key={t.id} onClick={() => setTool(t.id)} className={`rounded-2xl border p-4 text-left transition ${tool === t.id ? "border-leaf-500 bg-ink text-primary-foreground shadow-lift" : "border-border bg-paper/80 hover:bg-accent/50"}`}>
-            <t.icon className={`h-5 w-5 ${tool === t.id ? "text-leaf-300" : "text-leaf-600"}`} />
-            <p className="mt-3 font-semibold">{t.name}</p>
-            <p className={`text-xs ${tool === t.id ? "text-leaf-200" : "text-muted-foreground"}`}>{t.desc}</p>
-          </button>
+      <div className="mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-2 font-serif text-[clamp(1.3rem,2.2vw,1.9rem)] text-muted-foreground">
+        <span>I want to</span>
+        {tools.map((t, i) => (
+          <span key={t.id} className="inline-flex items-baseline gap-3">
+            <button onClick={() => setTool(t.id)} title={t.name} className={`relative transition ${tool === t.id ? "text-ink" : "hover:text-leaf-700"}`}>
+              {t.desc.toLowerCase()}
+              <span className={`absolute -bottom-1 left-0 h-[2px] bg-leaf-500 transition-all duration-500 ${tool === t.id ? "w-full" : "w-0"}`} />
+            </button>
+            {i < tools.length - 1 && <span className="text-border">/</span>}
+          </span>
         ))}
       </div>
+      <p className="mt-4 flex items-center gap-2 font-mono text-xs text-muted-foreground">
+        {(() => { const t = tools.find((x) => x.id === tool)!; return <><t.icon className="h-3.5 w-3.5 text-leaf-600" /> Opening {t.name}</>; })()}
+      </p>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-paper shadow-lift">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
