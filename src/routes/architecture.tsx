@@ -22,11 +22,11 @@ export const Route = createFileRoute("/architecture")({
 });
 
 const tools = [
-  { id: "excalidraw", name: "Excalidraw", icon: PenTool, desc: "Hand-drawn whiteboard sketches" },
-  { id: "drawio", name: "draw.io", icon: Workflow, desc: "Precise cloud & network diagrams" },
-  { id: "bpmn", name: "BPMN", icon: GitBranch, desc: "Business process modeling" },
-  { id: "isoflow", name: "Isoflow", icon: Box, desc: "Isometric infrastructure maps" },
-  { id: "drawcms", name: "DrawCMS", icon: LayoutTemplate, desc: "Diagrams as content" },
+  { id: "excalidraw", name: "Excalidraw", icon: PenTool, desc: "Sketch an idea" },
+  { id: "drawio", name: "draw.io", icon: Workflow, desc: "Map a cloud network" },
+  { id: "bpmn", name: "BPMN", icon: GitBranch, desc: "Model a process" },
+  { id: "isoflow", name: "Isoflow", icon: Box, desc: "Build an isometric map" },
+  { id: "drawcms", name: "DrawCMS", icon: LayoutTemplate, desc: "Publish diagrams as content" },
 ] as const;
 type ToolId = (typeof tools)[number]["id"];
 
