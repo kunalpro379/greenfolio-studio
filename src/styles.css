@@ -47,7 +47,7 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.975 0.014 135);
+  --background: oklch(0.985 0.008 125);
   --paper: oklch(0.992 0.006 120);
   --ink: oklch(0.18 0.02 150);
   --foreground: oklch(0.2 0.02 150);
@@ -100,13 +100,13 @@
 }
 
 /* Football-like connected polygon texture (hexagons + pentagon nodes) */
+/* Light gray low-poly triangles on creamy green */
 @utility bg-polygons {
   background-color: var(--background);
   background-image:
-    radial-gradient(ellipse at 20% 0%, color-mix(in oklab, var(--leaf-200) 35%, transparent), transparent 55%),
-    radial-gradient(ellipse at 90% 30%, color-mix(in oklab, var(--leaf-100) 60%, transparent), transparent 50%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='104' viewBox='0 0 120 104'%3E%3Cg fill='none' stroke='%2366905f' stroke-opacity='0.13' stroke-width='1'%3E%3Cpath d='M30 0l30 17v35L30 69 0 52V17z'/%3E%3Cpath d='M90 0l30 17v35L90 69 60 52V17z' /%3E%3Cpath d='M60 52l30 17v35M60 52L30 69v35'/%3E%3Cpath d='M30 17l15 9 15-9M90 17l-15 9-15-9M45 26v17M75 26v17M45 43l15 9 15-9'/%3E%3C/g%3E%3Cg fill='%2366905f' fill-opacity='0.16'%3E%3Ccircle cx='30' cy='0' r='1.6'/%3E%3Ccircle cx='60' cy='17' r='1.6'/%3E%3Ccircle cx='60' cy='52' r='1.6'/%3E%3Ccircle cx='30' cy='69' r='1.6'/%3E%3Ccircle cx='0' cy='52' r='1.6'/%3E%3Ccircle cx='90' cy='69' r='1.6'/%3E%3Ccircle cx='45' cy='26' r='1.2'/%3E%3Ccircle cx='75' cy='26' r='1.2'/%3E%3Cpath d='M60 34l5 4-2 6h-6l-2-6z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: auto, auto, 120px 104px;
+    radial-gradient(ellipse at 20% 0%, color-mix(in oklab, var(--leaf-100) 30%, transparent), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='300' viewBox='0 0 480 300'%3E%3Cg stroke='%23a3a8ad' stroke-opacity='0.45' stroke-width='0.7'%3E%3Cpath fill='%23e9ebed' fill-opacity='0.35' d='M0 0L48 130 0 160z'/%3E%3Cpath fill='%23f3f4f5' fill-opacity='0.3' d='M0 0H205L48 130z'/%3E%3Cpath fill='%23dfe2e5' fill-opacity='0.3' d='M205 0L200 62 48 130z'/%3E%3Cpath fill='%23ffffff' fill-opacity='0.3' d='M48 130L200 62 175 300H70z'/%3E%3Cpath fill='%23e4e6e9' fill-opacity='0.3' d='M0 160L48 130 70 300H0z'/%3E%3Cpath fill='%23eef0f2' fill-opacity='0.3' d='M205 0H290L325 100z'/%3E%3Cpath fill='%23e2e5e8' fill-opacity='0.3' d='M205 0L325 100 200 62z'/%3E%3Cpath fill='%23f6f7f8' fill-opacity='0.3' d='M200 62L325 100 330 300H175z'/%3E%3Cpath fill='%23e6e8eb' fill-opacity='0.3' d='M290 0H400L325 100z'/%3E%3Cpath fill='%23dde0e3' fill-opacity='0.3' d='M400 0L430 95 325 100z'/%3E%3Cpath fill='%23eceef0' fill-opacity='0.3' d='M400 0H480V60L430 95z'/%3E%3Cpath fill='%23f1f2f4' fill-opacity='0.3' d='M325 100L430 95 480 60V300H330z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, 960px 600px;
   background-attachment: fixed;
 }
 
