@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Download, Upload, Search, LayoutGrid, List, FileText, FileArchive, FileCode, Image, Workflow, GitBranch, PenTool, Folder } from "lucide-react";
+import { Download, Upload, Search, FileText, FileArchive, FileCode, Image, Workflow, GitBranch, PenTool, Folder, FolderOpen, ChevronRight, HardDrive } from "lucide-react";
 import { files, type RepoFile } from "@/lib/data";
 
 export const Route = createFileRoute("/files")({
@@ -18,13 +18,14 @@ export const Route = createFileRoute("/files")({
 });
 
 const icons: Record<RepoFile["type"], typeof FileText> = { PDF: FileText, ZIP: FileArchive, MD: FileCode, PNG: Image, DRAWIO: Workflow, BPMN: GitBranch, EXCALIDRAW: PenTool };
-const folders = ["All", ...Array.from(new Set(files.map((f) => f.folder)))];
+const folders = Array.from(new Set(files.map((f) => f.folder)));
 
 function Files() {
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const [folder, setFolder] = useState("All");
+  const [folder, setFolder] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const shown = files.filter((f) => (folder === "All" || f.folder === folder) && f.name.toLowerCase().includes(q.toLowerCase()));
+  const inDir = files.filter((f) => (folder ? f.folder === folder : true) && f.name.toLowerCase().includes(q.toLowerCase()));
+  const shownFiles = folder || q ? inDir : [];
+  const shownFolders = folder || q ? [] : folders;
 
   return (
     <main className="mx-auto max-w-[1400px] px-6 pt-12">
@@ -36,69 +37,62 @@ function Files() {
         <button className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-soft hover:bg-leaf-800"><Upload className="h-4 w-4" /> Upload file</button>
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[220px_1fr]">
-        <aside>
-          <p className="eyebrow mb-3">Folders</p>
-          <ul className="space-y-1">
+      <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-paper/90 shadow-soft lg:grid lg:grid-cols-[240px_1fr]">
+        <aside className="border-b border-border bg-muted/40 p-4 lg:border-b-0 lg:border-r">
+          <button onClick={() => setFolder(null)} className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${folder === null ? "bg-ink text-primary-foreground" : "text-ink hover:bg-accent"}`}>
+            <HardDrive className="h-4 w-4" /> Repository
+          </button>
+          <ul className="mt-1 ml-4 border-l border-dashed border-border pl-2">
             {folders.map((f) => (
               <li key={f}>
-                <button onClick={() => setFolder(f)} className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${folder === f ? "bg-ink text-primary-foreground" : "text-ink hover:bg-accent"}`}>
-                  <Folder className="h-4 w-4" /> {f}
-                  <span className="ml-auto text-xs opacity-60">{f === "All" ? files.length : files.filter((x) => x.folder === f).length}</span>
+                <button onClick={() => setFolder(f)} className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${folder === f ? "bg-accent font-medium text-ink" : "text-muted-foreground hover:text-ink"}`}>
+                  {folder === f ? <FolderOpen className="h-4 w-4 text-leaf-600" /> : <Folder className="h-4 w-4" />} {f}
+                  <span className="ml-auto text-xs opacity-60">{files.filter((x) => x.folder === f).length}</span>
                 </button>
               </li>
             ))}
           </ul>
         </aside>
-        <section>
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-paper px-4">
+
+        <section className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
+            <nav className="flex items-center gap-1 text-sm">
+              <button onClick={() => setFolder(null)} className="text-muted-foreground hover:text-ink">Repository</button>
+              {folder && <><ChevronRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="font-medium text-ink">{folder}</span></>}
+            </nav>
+            <div className="ml-auto flex w-full items-center gap-2 rounded-full border border-border bg-paper px-3 sm:w-72">
               <Search className="h-4 w-4 text-muted-foreground" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search files, PDFs, diagrams…" className="h-10 flex-1 bg-transparent text-sm outline-none" />
-            </div>
-            <div className="flex rounded-full border border-border bg-paper p-0.5">
-              {([["grid", LayoutGrid], ["list", List]] as const).map(([v, I]) => (
-                <button key={v} onClick={() => setView(v)} aria-label={v} className={`rounded-full p-2 ${view === v ? "bg-ink text-primary-foreground" : "text-muted-foreground"}`}><I className="h-4 w-4" /></button>
-              ))}
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search in this folder…" className="h-9 flex-1 bg-transparent text-sm outline-none" />
             </div>
           </div>
 
-          {view === "grid" ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {shown.map((f, i) => {
-                const I = icons[f.type];
-                return (
-                  <div key={f.name} className="group rounded-2xl border border-border bg-paper p-5 shadow-soft transition hover:-translate-y-1 hover:shadow-lift animate-rise" style={{ animationDelay: `${i * 40}ms` }}>
-                    <div className="flex h-32 items-center justify-center rounded-xl bg-leaf-50 bg-polygons">
-                      <I className="h-10 w-10 text-leaf-600" />
-                    </div>
-                    <p className="eyebrow mt-4 !text-[0.65rem]">{f.type} · {f.size} · {f.license}</p>
-                    <h3 className="mt-1 truncate font-semibold text-ink">{f.name}</h3>
-                    <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{f.author}</span>
-                      <button className="pill !py-1 text-xs"><Download className="h-3.5 w-3.5" /> {f.downloads.toLocaleString()}</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-2xl border border-border bg-paper">
-              {shown.map((f) => {
-                const I = icons[f.type];
-                return (
-                  <div key={f.name} className="flex items-center gap-4 border-b border-dashed border-border px-5 py-4 last:border-0 hover:bg-accent/40">
-                    <I className="h-5 w-5 text-leaf-600" />
-                    <span className="flex-1 truncate text-ink">{f.name}</span>
-                    <span className="hidden w-28 text-sm text-muted-foreground md:block">{f.author}</span>
-                    <span className="hidden w-16 font-mono text-xs text-muted-foreground sm:block">{f.size}</span>
-                    <span className="hidden w-16 font-mono text-xs text-muted-foreground sm:block">{f.date}</span>
-                    <button aria-label="Download"><Download className="h-4 w-4 text-muted-foreground hover:text-ink" /></button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <div className="grid grid-cols-[1fr_auto] gap-4 px-5 py-2 font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground sm:grid-cols-[1fr_140px_80px_70px_40px]">
+            <span>Name</span><span className="hidden sm:block">Author</span><span className="hidden sm:block">Size</span><span className="hidden sm:block">Date</span><span />
+          </div>
+          <div className="divide-y divide-dashed divide-border border-t border-border">
+            {shownFolders.map((f) => (
+              <button key={f} onDoubleClick={() => setFolder(f)} onClick={() => setFolder(f)} className="grid w-full grid-cols-[1fr_auto] items-center gap-4 px-5 py-3 text-left hover:bg-accent/50 sm:grid-cols-[1fr_140px_80px_70px_40px]">
+                <span className="flex items-center gap-3 text-ink"><Folder className="h-5 w-5 fill-leaf-200 text-leaf-600" /> {f}</span>
+                <span className="hidden text-sm text-muted-foreground sm:block">—</span>
+                <span className="hidden font-mono text-xs text-muted-foreground sm:block">{files.filter((x) => x.folder === f).length} items</span>
+                <span className="hidden sm:block" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            ))}
+            {shownFiles.map((f) => {
+              const I = icons[f.type];
+              return (
+                <div key={f.name} className="grid grid-cols-[1fr_auto] items-center gap-4 px-5 py-3 hover:bg-accent/40 sm:grid-cols-[1fr_140px_80px_70px_40px]">
+                  <span className="flex min-w-0 items-center gap-3 text-ink"><I className="h-5 w-5 shrink-0 text-leaf-600" /><span className="truncate">{f.name}</span><span className="hidden rounded bg-muted px-1.5 font-mono text-[0.6rem] text-muted-foreground md:inline">{f.license}</span></span>
+                  <span className="hidden truncate text-sm text-muted-foreground sm:block">{f.author}</span>
+                  <span className="hidden font-mono text-xs text-muted-foreground sm:block">{f.size}</span>
+                  <span className="hidden font-mono text-xs text-muted-foreground sm:block">{f.date}</span>
+                  <button aria-label="Download"><Download className="h-4 w-4 text-muted-foreground hover:text-ink" /></button>
+                </div>
+              );
+            })}
+            {shownFolders.length + shownFiles.length === 0 && <p className="px-5 py-10 text-center text-sm text-muted-foreground">Nothing here yet.</p>}
+          </div>
         </section>
       </div>
     </main>
