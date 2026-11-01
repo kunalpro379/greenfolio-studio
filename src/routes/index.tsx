@@ -76,7 +76,7 @@ function Hero() {
   );
 }
 
-function Gallery() {
+function Gallery({ items: posts }: { items: Post[] }) {
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 xl:grid-cols-6">
       {posts.map((p, i) => (
@@ -90,7 +90,7 @@ function Gallery() {
   );
 }
 
-function Dashed() {
+function Dashed({ items: posts }: { items: Post[] }) {
   return (
     <div className="grid border-t border-dashed border-border md:grid-cols-2">
       {posts.map((p, i) => (
@@ -105,7 +105,7 @@ function Dashed() {
   );
 }
 
-function Magazine() {
+function Magazine({ items: posts }: { items: Post[] }) {
   const lead = posts[0]!;
   const rest = posts.slice(1);
   return (
@@ -131,7 +131,7 @@ function Magazine() {
   );
 }
 
-function Bento() {
+function Bento({ items: posts }: { items: Post[] }) {
   const spans = ["md:col-span-2 md:row-span-2", "", "", "md:col-span-2", "", "md:row-span-2", "", "md:col-span-2", ""];
   return (
     <div className="grid auto-rows-[220px] gap-4 md:grid-cols-4">
@@ -155,10 +155,23 @@ const features = [
   { to: "/blogbooks", icon: BookOpen, title: "Blogbooks", text: "Bind posts into guides readers can follow chapter by chapter." },
 ] as const;
 
+function shuffle<T>(a: readonly T[]): T[] {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j]!, r[i]!]; }
+  return r;
+}
+const counts: Record<Layout, number> = { gallery: 6, dashed: 4, magazine: 5, bento: 6 };
+const titles: Record<Layout, string> = { gallery: "Fresh from the community", dashed: "Worth a slow read", magazine: "Editor's picks", bento: "Diagrams & deep dives" };
+type Sec = { id: number; layout: Layout; items: Post[] };
+function makeStream(): Sec[] {
+  const order = [...shuffle(layouts), ...shuffle(layouts)].filter((l, i, arr) => i === 0 || l !== arr[i - 1]);
+  return order.map((layout, id) => ({ id, layout, items: shuffle(posts).slice(0, counts[layout]) }));
+}
+
 function Index() {
-  const [layout, setLayout] = useState<Layout>("gallery");
-  useEffect(() => setLayout(layouts[Math.floor(Math.random() * layouts.length)]!), []);
-  const view = { gallery: <Gallery />, dashed: <Dashed />, magazine: <Magazine />, bento: <Bento /> }[layout];
+  const [stream, setStream] = useState<Sec[]>(() => layouts.map((layout, id) => ({ id, layout, items: posts.slice(0, counts[layout]) })));
+  useEffect(() => setStream(makeStream()), []);
+  const render = (s: Sec) => ({ gallery: <Gallery items={s.items} />, dashed: <Dashed items={s.items} />, magazine: <Magazine items={s.items} />, bento: <Bento items={s.items} /> })[s.layout];
 
   return (
     <main>
@@ -172,21 +185,20 @@ function Index() {
           </Link>
         ))}
       </section>
-      <section className="mx-auto mt-24 max-w-[1400px] px-6">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Latest posts</p>
-            <h2 className="mt-2 font-serif text-4xl text-ink">Fresh from the community</h2>
+      <div className="mx-auto mt-24 flex max-w-[1400px] justify-end px-6">
+        <button className="pill" onClick={() => setStream(makeStream())}><Shuffle className="h-3.5 w-3.5" /> Shuffle layouts</button>
+      </div>
+      {stream.map((s, i) => (
+        <section key={`${s.id}-${s.layout}-${s.items[0]?.slug}`} className="mx-auto mt-14 max-w-[1400px] px-6">
+          <div className="mb-10 flex items-end justify-between gap-4 border-b border-border pb-4">
+            <div>
+              <p className="eyebrow">{String(i + 1).padStart(2, "0")} · {s.layout}</p>
+              <h2 className="mt-2 font-serif text-4xl text-ink">{titles[s.layout]}</h2>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {layouts.map((l) => (
-              <button key={l} onClick={() => setLayout(l)} className={`pill capitalize ${layout === l ? "!bg-ink !text-primary-foreground" : ""}`}>{l}</button>
-            ))}
-            <button className="pill" onClick={() => setLayout(layouts[(layouts.indexOf(layout) + 1 + Math.floor(Math.random() * 3)) % 4]!)}><Shuffle className="h-3.5 w-3.5" /> Shuffle</button>
-          </div>
-        </div>
-        <div key={layout}>{view}</div>
-      </section>
+          {render(s)}
+        </section>
+      ))}
     </main>
   );
 }
